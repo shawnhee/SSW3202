@@ -1,0 +1,14 @@
+fstkm-prototype/
+├── index.html          # Login page
+├── student-dashboard.html
+├── organizer-dashboard.html
+├── dean-dashboard.html
+├── event-detail.html
+├── registration.html
+├── proposal-detail.html
+├── manage-participants.html
+├── css/
+│   └── style.css       # Shared styles
+└── js/
+    ├── mock-data.js    # Mock database
+    └── auth.js        # Authentication handling

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deputy Dean Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --white: #ffffff;
+      --gray: #7f8c8d;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: var(--dark);
+    }
+    
+    .header {
+      background-color: var(--dark);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .container {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar-menu li a {
+      display: block;
+      padding: 15px 25px;
+      color: var(--dark);
+      text-decoration: none;
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+    }
+    
+    .sidebar-menu li a:hover {
+      background-color: var(--light);
+    }
+    
+    .sidebar-menu li a.active {
+      border-left-color: var(--primary);
+      background-color: rgba(52, 152, 219, 0.1);
+      color: var(--primary);
+    }
+    
+    .sidebar-menu li a i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .main {
+      flex: 1;
+      padding: 25px;
+      background-color: #f5f7fa;
+    }
+    
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+    
+    .section-title h3 {
+      margin: 0;
+      color: var(--dark);
+      font-size: 1.5em;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+    
+    .review-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn i {
+      font-size: 0.9em;
+    }
+    
+    .btn-success {
+      background-color: var(--secondary);
+      color: white;
+    }
+    
+    .btn-warning {
+      background-color: var(--warning);
+      color: white;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #27ae60;
+    }
+    
+    .btn-warning:hover {
+      background-color: #e67e22;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+    
+    .comment-box {
+      margin-top: 20px;
+      display: none;
+      animation: fadeIn 0.3s;
+    }
+    
+    .comment-box textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      font-family: inherit;
+      resize: vertical;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .logout-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 15px;
+      color: var(--gray);
+      font-size: 0.9em;
+    }
+    
+    .meta-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-warning {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .badge-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .badge-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>FSKTM Event Management</h2>
+    <div class="user-info">
+      <div class="user-avatar" id="userAvatar">DD</div>
+      <span id="userName">Deputy Dean</span>
+      <button onclick="logout()" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-file-alt"></i> Proposals</a></li>
+        <li><a href="#"><i class="fas fa-calendar"></i> Events Calendar</a></li>
+        <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
+      </ul>
+    </div>
+    
+    <div class="main">
+      <div class="section-title">
+        <h3>Proposals Pending Review</h3>
+      </div>
+      
+      <div id="proposalsContainer">
+        <!-- Proposals will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const user = getCurrentUser();
+      if (!user || user.role !== 'dean') {
+        alert("Unauthorized access. Please login as Deputy Dean.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      // Set user info
+      document.getElementById('userAvatar').textContent = user.avatar || 'DD';
+      document.getElementById('userName').textContent = user.name || 'Deputy Dean';
+
+      // Load proposals
+      loadProposals();
+    });
+
+    function loadProposals() {
+      const proposals = getProposals();
+      const container = document.getElementById('proposalsContainer');
+
+      if (proposals.length === 0) {
+        container.innerHTML = `
+          <div class="card">
+            <div style="text-align: center; padding: 40px; color: var(--gray);">
+              <i class="far fa-folder-open" style="font-size: 3em; margin-bottom: 15px;"></i>
+              <h3>No proposals pending review</h3>
+              <p>All proposals have been processed</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+
+      proposals.forEach(proposal => {
+        const organizer = mockDB.users.find(u => u.id === proposal.organizer);
+        const statusBadge = getStatusBadge(proposal.status);
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3>${proposal.title}</h3>
+          
+          <div class="meta-container">
+            <div class="meta-item">
+              <i class="fas fa-user"></i>
+              <span>Submitted by: ${organizer ? organizer.name : 'Unknown'}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-calendar-day"></i>
+              <span>Date: ${formatDate(proposal.date)}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Venue: ${proposal.venue}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-users"></i>
+              <span>Participants: ${proposal.participants || 'N/A'}</span>
+            </div>
+            ${statusBadge ? `<span class="badge ${statusBadge.class}">${statusBadge.text}</span>` : ''}
+          </div>
+          
+          <div style="margin: 15px 0;">
+            <h4 style="margin-bottom: 8px;">Objectives</h4>
+            <p>${proposal.objectives}</p>
+          </div>
+          
+          <div style="margin: 15px 0;">
+            <h4 style="margin-bottom: 8px;">Description</h4>
+            <p>${proposal.description}</p>
+          </div>
+          
+          ${proposal.attachments && proposal.attachments.length > 0 ? `
+            <div style="margin: 15px 0;">
+              <h4 style="margin-bottom: 8px;">Attachments</h4>
+              <ul>
+                ${proposal.attachments.map(file => `
+                  <li><a href="#" style="color: var(--primary);">${file}</a></li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          
+          ${proposal.comments ? `
+            <div style="margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-radius: 6px;">
+              <h4 style="margin-bottom: 8px;">Previous Comments</h4>
+              <p>${proposal.comments}</p>
+            </div>
+          ` : ''}
+
+          <div class="review-actions">
+            <button class="btn btn-success" onclick="approveProposal(${proposal.id})">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button class="btn btn-warning" onclick="showCommentBox(this)">
+              <i class="fas fa-edit"></i> Return for Revision
+            </button>
+            <button class="btn btn-danger" onclick="rejectProposal(${proposal.id})">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
+
+          <div class="comment-box">
+            <textarea placeholder="Please provide specific feedback for revision..."></textarea>
+            <button class="btn btn-warning" style="margin-top: 10px;" 
+              onclick="returnProposal(${proposal.id}, this)">
+              <i class="fas fa-paper-plane"></i> Submit Comments
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function getStatusBadge(status) {
+      switch(status) {
+        case 'approved': return { class: 'badge-success', text: 'Approved' };
+        case 'rejected': return { class: 'badge-danger', text: 'Rejected' };
+        case 'returned': return { class: 'badge-warning', text: 'Returned' };
+        case 'pending': return { class: 'badge-info', text: 'Pending Review' };
+        default: return null;
+      }
+    }
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+
+    function showCommentBox(button) {
+      const commentBox = button.parentElement.nextElementSibling;
+      commentBox.style.display = 'block';
+      commentBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function approveProposal(id) {
+      if (confirm('Are you sure you want to approve this proposal?')) {
+        updateProposalStatus(id, 'approved');
+        showAlert('success', 'Proposal approved successfully!');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    }
+
+    function returnProposal(id, button) {
+      const comments = button.previousElementSibling.value.trim();
+      if (!comments) {
+        showAlert('warning', 'Please enter comments for revision');
+        return;
+      }
+      
+      if (confirm('Return this proposal with your comments?')) {
+        updateProposalStatus(id, 'returned', comments);
+        showAlert('info', 'Proposal returned with comments');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    }
+
+    function rejectProposal(id) {
+      if (confirm('Are you sure you want to reject this proposal?')) {
+        updateProposalStatus(id, 'rejected');
+        showAlert('danger', 'Proposal rejected');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    }
+
+    function showAlert(type, message) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.style = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background-color: ${type === 'success' ? '#d4edda' : 
+                         type === 'danger' ? '#f8d7da' : 
+                         type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : 
+                type === 'danger' ? '#721c24' : 
+                type === 'warning' ? '#856404' : '#0c5460'};
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        animation: fadeIn 0.3s;
+      `;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300);
+      }, 3000);
+    }
+
+       function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

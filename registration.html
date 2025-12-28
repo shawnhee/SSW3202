@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Registration</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .registration-header {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .event-image {
+      width: 300px;
+      height: 200px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+    }
+    .event-info {
+      flex: 1;
+    }
+    .payment-methods {
+      margin: 20px 0;
+    }
+    .payment-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .payment-option:hover {
+      border-color: var(--secondary);
+    }
+    .payment-option input {
+      margin-right: 10px;
+    }
+    .payment-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 15px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>FSKTM Event Management</h2>
+    <div class="user-info">
+      <div class="user-avatar"></div>
+      <span class="user-name"></span>
+      <button onclick="handleLogout()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 15px;">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="student-dashboard.html"><i class="fas fa-arrow-left"></i> Back</a></li>
+        <li><a href="student-dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+      </ul>
+    </div>
+    
+    <div class="main">
+      <div id="registrationContainer">
+        <!-- Registration form will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('id');
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const user = getCurrentUser();
+      if (!user || user.role !== 'student') {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const event = getEventById(eventId);
+      if (!event) {
+        alert('Event not found');
+        window.location.href = 'student-dashboard.html';
+        return;
+      }
+
+      document.querySelector('.user-avatar').textContent = user.avatar;
+      document.querySelector('.user-name').textContent = user.name;
+
+      const container = document.getElementById('registrationContainer');
+      container.innerHTML = `
+        <div class="card">
+          <div class="registration-header">
+            <div class="event-image" style="background-image: url('${event.image}')"></div>
+            <div class="event-info">
+              <h2>Register for ${event.title}</h2>
+              <p><strong>Date:</strong> ${event.date} ${event.endDate ? `to ${event.endDate}` : ''}</p>
+              <p><strong>Venue:</strong> ${event.venue}</p>
+              <p><strong>Fee:</strong> ${event.fee > 0 ? `RM ${event.fee.toFixed(2)}` : 'FREE'}</p>
+            </div>
+          </div>
+          
+          <form id="registrationForm">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" class="form-control" value="${user.name}" disabled>
+            </div>
+            <div class="form-group">
+              <label>Student ID</label>
+              <input type="text" id="studentId" class="form-control" value="${user.studentId || ''}" disabled>
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <input type="text" id="faculty" class="form-control" value="${user.department || ''}" disabled>
+            </div>
+             <div class="form-group">
+              <label>Contact Number</label>
+              <input type="tel" id="phone" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="text" id="faculty" class="form-control" value="${user.email || ''}" disabled>
+            </div>
+
+            ${event.fee > 0 ? `
+              <div class="form-group">
+                <label>Payment Method</label>
+                <div class="payment-methods">
+                  <label class="payment-option">
+                    <input type="radio" name="payment" value="tng" checked>
+                    <div class="payment-icon" style="background-image: url('https://via.placeholder.com/40x40?text=TNG')"></div>
+                    <div><strong>TNG eWallet</strong><p>Pay using Touch 'n Go eWallet</p></div>
+                  </label>
+                  <label class="payment-option">
+                    <input type="radio" name="payment" value="bank">
+                    <div class="payment-icon" style="background-image: url('https://via.placeholder.com/40x40?text=Bank')"></div>
+                    <div><strong>Bank Transfer</strong><p>Direct bank transfer</p></div>
+                  </label>
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="form-actions" style="margin-top: 30px;">
+              <button type="button" class="btn btn-primary" onclick="submitRegistration(${event.id}, ${user.id})">
+                <i class="fas fa-check-circle"></i> Complete Registration
+              </button>
+              <button type="button" class="btn btn-outline" onclick="window.history.back()">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    });
+
+    function submitRegistration(eventId, userId) {
+      const event = getEventById(eventId);
+      let paymentMethod = null;
+
+      if (event.fee > 0) {
+        const paymentInput = document.querySelector('input[name="payment"]:checked');
+        if (paymentInput) paymentMethod = paymentInput.value;
+      }
+
+      const success = registerForEvent(userId, eventId, paymentMethod);
+
+      if (success) {
+        alert(event.fee > 0 ? `Registered with ${paymentMethod}.` : 'Registered successfully!');
+        window.location.href = 'student-dashboard.html';
+      } else {
+        alert('Registration failed. You might already be registered or the event is full.');
+      }
+    }
+
+    function handleLogout() {
+      logout();
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

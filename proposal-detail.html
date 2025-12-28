@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Proposal Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .proposal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .comments-section {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>FSKTM Event Management</h2>
+    <div class="user-info">
+      <div class="user-avatar"></div>
+      <span class="user-name"></span>
+      <button onclick="handleLogout()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 15px;">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="organizer-dashboard.html"><i class="fas fa-arrow-left"></i> Back</a></li>
+        <li><a href="organizer-dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-file-alt"></i> My Proposals</a></li>
+      </ul>
+    </div>
+    
+    <div class="main">
+      <div id="proposalContainer">
+        <!-- Proposal details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const proposalId = urlParams.get('id');
+    const isEditMode = urlParams.get('edit') === 'true';
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const user = getCurrentUser();
+      if (!user || user.role !== 'organizer') {
+        alert('Unauthorized');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const proposal = proposalId ? getProposalById(proposalId) : null;
+      const container = document.getElementById('proposalContainer');
+
+      if (isEditMode || !proposalId) {
+        container.innerHTML = `
+          <div class="card">
+            <h2>${proposalId ? 'Edit Proposal' : 'Create New Proposal'}</h2>
+            <div class="form-group">
+              <label>Event Title</label>
+              <input type="text" id="proposalTitle" class="form-control" value="${proposal ? proposal.title : ''}" required>
+            </div>
+            <div class="form-group">
+              <label>Event Date</label>
+              <input type="date" id="proposalDate" class="form-control" value="${proposal ? proposal.date : ''}" required>
+            </div>
+            <div class="form-group">
+              <label>Venue</label>
+              <input type="text" id="proposalVenue" class="form-control" value="${proposal ? proposal.venue : ''}" required>
+            </div>
+            <div class="form-group">
+              <label>Expected Participants</label>
+              <input type="number" id="proposalParticipants" class="form-control" value="${proposal ? proposal.participants || '' : ''}">
+            </div>
+            <div class="form-group">
+              <label>Objectives</label>
+              <textarea id="proposalObjectives" class="form-control" rows="3">${proposal ? proposal.objectives : ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Event Description</label>
+              <textarea id="proposalDescription" class="form-control" rows="5">${proposal ? proposal.description : ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Attachments</label>
+              <input type="file" class="form-control">
+              ${proposal && proposal.attachments ? `<p style="margin-top: 10px;">Current attachments: ${proposal.attachments.join(', ')}</p>` : ''}
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveProposal(${proposal ? proposal.id : 'null'})">
+                <i class="fas fa-save"></i> Save
+              </button>
+              ${proposal && (proposal.status === 'draft' || proposal.status === 'returned') ? `
+                <button class="btn btn-success" onclick="submitProposal(${proposal.id})">
+                  <i class="fas fa-paper-plane"></i> Submit for Review
+                </button>` : ''}
+              <button class="btn btn-outline" onclick="window.history.back()">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        let statusClass = '';
+        let statusText = '';
+        switch (proposal.status) {
+          case 'draft':
+            statusClass = 'status-draft';
+            statusText = 'DRAFT';
+            break;
+          case 'pending':
+            statusClass = 'status-pending';
+            statusText = 'PENDING REVIEW';
+            break;
+          case 'approved':
+            statusClass = 'status-approved';
+            statusText = 'APPROVED';
+            break;
+          case 'returned':
+            statusClass = 'status-returned';
+            statusText = 'RETURNED FOR REVISION';
+            break;
+        }
+
+        container.innerHTML = `
+          <div class="card">
+            <div class="proposal-header">
+              <h2>${proposal.title}</h2>
+              <span class="${statusClass} status-badge">${statusText}</span>
+            </div>
+            <div class="form-group">
+              <label>Event Date</label>
+              <p>${proposal.date}</p>
+            </div>
+            <div class="form-group">
+              <label>Venue</label>
+              <p>${proposal.venue}</p>
+            </div>
+            <div class="form-group">
+              <label>Objectives</label>
+              <p>${proposal.objectives}</p>
+            </div>
+            <div class="form-group">
+              <label>Event Description</label>
+              <p>${proposal.description}</p>
+            </div>
+            ${proposal.comments ? `
+              <div class="comments-section">
+                <h4>Reviewer Comments</h4>
+                <p>${proposal.comments}</p>
+              </div>` : ''}
+            <div class="form-actions">
+              ${proposal.status === 'draft' || proposal.status === 'returned' ? `
+                <button class="btn btn-primary" onclick="location.href='proposal-detail.html?id=${proposal.id}&edit=true'">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn btn-success" onclick="submitProposal(${proposal.id})">
+                  <i class="fas fa-paper-plane"></i> Submit
+                </button>` : ''}
+              <button class="btn btn-outline" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Back
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    function handleLogout() {
+      logout();
+      window.location.href = 'index.html';
+    }
+
+    function saveProposal(id) {
+      // Optionally: use createProposal() or updateProposal()
+      alert('Proposal saved successfully!');
+      if (!id) {
+        window.location.href = 'organizer-dashboard.html';
+      }
+    }
+
+    function submitProposal(id) {
+      if (confirm('Are you sure you want to submit this proposal for review?')) {
+        updateProposalStatus(id, 'pending');
+        alert('Proposal submitted successfully!');
+        window.location.href = 'organizer-dashboard.html';
+      }
+    }
+  </script>
+</body>
+</html>

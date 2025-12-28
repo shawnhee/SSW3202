@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .event-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s;
+    }
+    .event-card:hover {
+      transform: translateY(-5px);
+    }
+    .event-image {
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+    }
+    .event-details {
+      padding: 20px;
+    }
+    .event-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 10px;
+      color: var(--primary);
+    }
+    .event-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .event-meta i {
+      margin-right: 5px;
+    }
+    .event-description {
+      color: var(--dark);
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    /* Notification Styles */
+    .notification-menu-item {
+      position: relative;
+    }
+    
+    .notification-badge {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .notification-panel {
+      display: none;
+      position: fixed;
+      left: 250px;
+      top: 0;
+      bottom: 0;
+      width: 350px;
+      background: white;
+      border-right: 1px solid #eee;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      z-index: 900;
+      overflow-y: auto;
+    }
+    
+    .notification-panel-header {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+    }
+    
+    .notification-panel-header h4 {
+      margin: 0;
+      color: var(--dark);
+    }
+    
+    .notification-panel-header button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .notification-list {
+      padding: 0;
+    }
+    
+    .notification-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .notification-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .notification-item.unread {
+      background: #f8fafc;
+    }
+    
+    .notification-item .notification-title {
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 5px;
+    }
+    
+    .notification-item .notification-message {
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    
+    .notification-item .notification-time {
+      font-size: 12px;
+      color: #95a5a6;
+    }
+    
+    .empty-notifications {
+      text-align: center;
+      padding: 40px 20px;
+      color: #95a5a6;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>FSKTM Event Management</h2>
+    <div class="user-info">
+      <div class="user-avatar" id="userAvatar">S</div>
+      <span id="userName">Student User</span>
+      <button onclick="handleLogout()" style="background: none; border: none; color: white; cursor: pointer; margin-left: 15px;">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-calendar-check"></i> My Events</a></li>
+        <li class="notification-menu-item">
+          <a href="#">
+            <i class="fas fa-bell"></i> Notifications
+            <span class="notification-badge" id="sidebarUnreadCount">0</span>
+          </a>
+        </li>
+        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </div>
+    
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notificationPanel">
+      <div class="notification-panel-header">
+        <h4>Notifications</h4>
+        <button id="markAllRead">
+          <i class="fas fa-check-double"></i> Mark all as read
+        </button>
+      </div>
+      <div class="notification-list" id="notificationList">
+        <div class="empty-notifications">
+          <i class="far fa-bell-slash"></i>
+          <p>No notifications yet</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main">
+      <div class="section-title">
+        <h3>Upcoming Events</h3>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-outline"><i class="fas fa-filter"></i> Filter</button>
+          <button class="btn btn-outline"><i class="fas fa-search"></i> Search</button>
+        </div>
+      </div>
+      
+      <div class="events-grid" id="eventsContainer">
+        <!-- Events will be loaded here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script>
+    // Initialize the page
+    function initPage() {
+      const user = getCurrentUser();
+      if (!user || user.role !== 'student') {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      document.getElementById('userAvatar').textContent = user.avatar || 'S';
+      document.getElementById('userName').textContent = user.name || 'Student User';
+
+      const events = getEvents();
+      const eventsContainer = document.getElementById('eventsContainer');
+
+      if (events && events.length > 0) {
+        events.forEach(event => {
+          const eventCard = document.createElement('div');
+          eventCard.className = 'event-card';
+          
+          const eventData = {
+            id: event.id || 0,
+            title: event.title || 'No Title',
+            date: event.date || 'Date not set',
+            endDate: event.endDate || '',
+            venue: event.venue || 'Venue not specified',
+            fee: event.fee || 0,
+            registered: event.registered || 0,
+            capacity: event.capacity || 0,
+            description: event.description || 'No description available',
+            image: event.image || 'images/default-event.jpg'
+          };
+
+          eventCard.innerHTML = `
+            <div class="event-image" style="background-image: url('${eventData.image}')"></div>
+            <div class="event-details">
+              <h3 class="event-title">${eventData.title}</h3>
+              <div class="event-meta">
+                <span><i class="far fa-calendar-alt"></i> ${eventData.date}${eventData.endDate ? ` - ${eventData.endDate}` : ''}</span>
+                <span><i class="fas fa-map-marker-alt"></i> ${eventData.venue}</span>
+              </div>
+              <div class="event-meta">
+                <span class="badge ${eventData.fee > 0 ? 'badge-warning' : 'badge-success'}">
+                  ${eventData.fee > 0 ? `RM ${eventData.fee}` : 'FREE'}
+                </span>
+                <span><i class="fas fa-users"></i> ${eventData.registered}/${eventData.capacity}</span>
+              </div>
+              <p class="event-description">${eventData.description}</p>
+              <button class="btn btn-primary" onclick="viewEvent(${eventData.id})">
+                <i class="fas fa-eye"></i> View Details
+              </button>
+            </div>
+          `;
+
+          eventsContainer.appendChild(eventCard);
+        });
+      } else {
+        eventsContainer.innerHTML = '<p>No events available at this time.</p>';
+      }
+      
+      // Load notifications
+      loadNotifications();
+    }
+
+    function viewEvent(eventId) {
+      if (eventId) {
+        window.location.href = `event-detail.html?id=${eventId}`;
+      }
+    }
+
+    function handleLogout() {
+      if (typeof logout === 'function') {
+        logout();
+      }
+      window.location.href = 'index.html';
+    }
+
+    // Notification functions
+    function loadNotifications() {
+      const user = getCurrentUser();
+      if (!user) return;
+
+      const notifications = mockDB.notifications
+        .filter(n => n.userId === user.id)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      // Update unread count
+      const unreadCount = notifications.filter(n => !n.read).length;
+      document.getElementById('sidebarUnreadCount').textContent = unreadCount;
+      document.getElementById('sidebarUnreadCount').style.display = unreadCount > 0 ? 'flex' : 'none';
+
+      // Render notifications
+      const notificationList = document.getElementById('notificationList');
+      notificationList.innerHTML = '';
+
+      if (notifications.length === 0) {
+        notificationList.innerHTML = `
+          <div class="empty-notifications">
+            <i class="far fa-bell-slash"></i>
+            <p>No notifications yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      notifications.forEach(notif => {
+        const notifEl = document.createElement('div');
+        notifEl.className = `notification-item ${notif.read ? '' : 'unread'}`;
+        
+        notifEl.innerHTML = `
+          <div class="notification-title">${notif.title}</div>
+          <div class="notification-message">${notif.message}</div>
+          <div class="notification-time">${formatRelativeTime(new Date(notif.timestamp))}</div>
+        `;
+        
+        notifEl.addEventListener('click', () => {
+          if (!notif.read) {
+            mockDB.markAsRead(notif.id);
+            notifEl.classList.remove('unread');
+            loadNotifications(); // Refresh count
+          }
+          if (notif.eventId) {
+            viewEvent(notif.eventId);
+          }
+        });
+        
+        notificationList.appendChild(notifEl);
+      });
+    }
+
+    function formatRelativeTime(date) {
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes} min ago`;
+      if (hours < 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+      if (days < 7) return `${days} day${days !== 1 ? 's' : ''} ago`;
+      return date.toLocaleDateString();
+    }
+
+    // Initialize notification panel toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      initPage();
+      
+      const notificationMenuItem = document.querySelector('.notification-menu-item');
+      const notificationPanel = document.getElementById('notificationPanel');
+      
+      notificationMenuItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        notificationPanel.style.display = notificationPanel.style.display === 'block' ? 'none' : 'block';
+      });
+      
+      document.getElementById('markAllRead').addEventListener('click', function() {
+        const user = getCurrentUser();
+        mockDB.notifications
+          .filter(n => n.userId === user.id && !n.read)
+          .forEach(n => mockDB.markAsRead(n.id));
+        loadNotifications();
+      });
+    });
+  </script>
+</body>
+</html>

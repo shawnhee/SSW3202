@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FSKTM Event System - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { 
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      width: 380px;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .logo {
+      width: 250px;
+      margin-bottom:20 px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .role-btns {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .role-btn {
+      flex: 1;
+      padding: 10px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .role-btn.active {
+      border-color: #3498db;
+      background: #eaf2f8;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <img src="https://upm.edu.my/assets/images23/20170406143426UPM-New_FINAL.jpg" alt="FSKTM Logo" class="logo">
+    <h2>Welcome to </h2>
+    <h2>FSKTM Event Management System</h2>
+
+    
+    <div class="role-btns">
+      <div class="role-btn" onclick="selectRole('student')">
+        <i class="fas fa-user-graduate"></i>
+        <div>Student</div>
+      </div>
+      <div class="role-btn" onclick="selectRole('organizer')">
+        <i class="fas fa-calendar-alt"></i>
+        <div>Event Organizer</div>
+      </div>
+      <div class="role-btn" onclick="selectRole('dean')">
+        <i class="fas fa-user-tie"></i>
+        <div>Deputy Dean</div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your university email" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required>
+    </div>
+    
+    <button class="btn-login" onclick="handleLogin()">
+      <i class="fas fa-sign-in-alt"></i> Login
+    </button>
+  </div>
+
+  <script src="js/mock-data.js"></script>
+  <script>
+    function selectRole(role) {
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      // Auto-fill test credentials
+      const testAccounts = {
+        student: '229099@student.upm.edu.my',
+        organizer: 'sec@fsktm.upm.edu.my',
+        dean: 'hazura@upm.edu.my'
+      };
+      document.getElementById('email').value = testAccounts[role];
+      document.getElementById('password').value = 'test123'; // Default password
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        alert('Please enter both email and password');
+        return;
+      }
+
+      const user = login(email, password); // from mock-data.js
+      if (user) {
+        redirectToDashboard(user.role);
+      } else {
+        alert('Invalid credentials. Please Try Again');
+      }
+    }
+
+    function redirectToDashboard(role) {
+      const pages = {
+        student: 'student-dashboard.html',
+        organizer: 'organizer-dashboard.html',
+        dean: 'dean-dashboard.html'
+      };
+      window.location.href = pages[role];
+    }
+  </script>
+</body>
+</html>
